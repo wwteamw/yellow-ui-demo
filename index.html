@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#F6F7F8" id="meta-theme-color" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Yellow UI" />
+  <title>Yellow UI — Демо</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+  <link rel="apple-touch-icon" href="./icon.svg" />
+  <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
+  <style>
+    :root {
+      --bg: #F6F7F8;
+      --surface: #FFFFFF;
+      --surface-2: #F0F2F5;
+      --text: #111111;
+      --text-sec: #79818C;
+      --border: rgba(0, 0, 0, 0.06);
+      --yellow: #FFDD2D;
+      --yellow-press: #FCC521;
+      --blue: #2481CC;
+      --green: #16A34A;
+      --red: #EF4444;
+      --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      --nav-bg: rgba(255, 255, 255, 0.92);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    body.dark {
+      --bg: #0F1012;
+      --surface: #1C1E22;
+      --surface-2: #272A30;
+      --text: #F5F6F8;
+      --text-sec: #8E95A2;
+      --border: rgba(255, 255, 255, 0.08);
+      --card-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+      --nav-bg: rgba(24, 26, 30, 0.92);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    input, textarea {
+      user-select: text;
+      font-family: inherit;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: #E4E7EC;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body.dark {
+      background: #050506;
+    }
+
+    /* App Shell */
+    .app-shell {
+      position: relative;
+      width: 100%;
+      max-width: 430px;
+      height: 100dvh;
+      margin: 0 auto;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 0 50px rgba(0,0,0,0.12);
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    /* Scrollable Main Area */
+    .views-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .view {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior-y: contain;
+      padding: calc(var(--safe-top) + 12px) 16px calc(var(--safe-bottom) + 92px);
+      opacity: 0;
+      transform: translateY(10px) scale(0.992);
+      pointer-events: none;
+      transition: opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1), transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+      scrollbar-width: none;
+    }
+    .view::-webkit-scrollbar { display: none; }
+
+    .view.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    /* Reusable UI Elements */
+    .card {
+      background: var(--surface);
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 12px;
+      transition: transform 0.14s ease, background 0.25s ease;
+    }
+    .tap:active {
+      transform: scale(0.975);
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .section-title {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 8px 0 12px;
+    }
+
+    .muted {
+      color: var(--text-sec);
+      font-size: 13px;
+    }
+
+    /* Header */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      gap: 10px;
+    }
+    .profile-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FFDD2D, #FFA800);
+      color: #111;
+      font-weight: 800;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(255, 221, 45, 0.4);
+    }
+    .profile-name {
+      font-size: 17px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: none;
+      background: var(--surface);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.12s ease, background 0.2s ease;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+
+    /* Search */
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface-2);
+      border-radius: 16px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+    }
+    .search-box input {
+      border: none;
+      background: transparent;
+      outline: none;
+      width: 100%;
+      font-size: 15px;
+      color: var(--text);
+    }
+    .search-box input::placeholder { color: var(--text-sec); }
+
+    /* Stories */
+    .stories-row {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+    .stories-row::-webkit-scrollbar { display: none; }
+    .story-item {
+      flex: 0 0 92px;
+      height: 108px;
+      border-radius: 20px;
+      padding: 3px;
+      background: linear-gradient(135deg, #FFDD2D 0%, #FF6B00 100%);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .story-item.viewed {
+      background: var(--surface-2);
+    }
+    .story-item:active { transform: scale(0.95); }
+    .story-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 17px;
+      padding: 10px 9px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: #fff;
+      font-size: 11.5px;
+      font-weight: 600;
+      line-height: 1.2;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid var(--bg);
+    }
+    .story-emoji { font-size: 22px; }
+
+    /* Widgets Grid */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .mini-card {
+      background: var(--surface);
+      border-radius: 22px;
+      padding: 14px;
+      box-shadow: var(--card-shadow);
+      cursor: pointer;
+      transition: transform 0.14s ease;
+    }
+    .mini-card:active { transform: scale(0.97); }
+    .spend-bar {
+      display: flex;
+      height: 8px;
+      border-radius: 99px;
+      overflow: hidden;
+      gap: 2px;
+      margin-top: 12px;
+      background: var(--surface-2);
+    }
+
+    /* Quick Actions */
+    .actions-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .action-btn {
+      background: var(--surface);
+      border: none;
+      border-radius: 20px;
+      padding: 12px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.14s ease;
+    }
+    .action-btn:active { transform: scale(0.94); }
+    .action-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--yellow);
+      color: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Bank Account Card */
+    .account-row {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      cursor: pointer;
+    }
+    .acc-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-weight: 800;
+    }
+    .card-chip-mini {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 8px;
+      padding: 4px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #1C1E22;
+      color: #fff;
+    }
+    body.dark .card-chip-mini {
+      background: #2D3139;
+    }
+    .frozen-badge {
+      background: rgba(36, 129, 204, 0.15);
+      color: #2481CC;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 8px;
+      margin-left: 6px;
+    }
+
+    /* Transactions List */
+    .tx-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+    }
+    .tx-item:last-child { border-bottom: none; }
+    .tx-item:active { opacity: 0.65; }
+    .tx-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .tx-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      flex-shrink: 0;
+    }
+    .tx-title {
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tx-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .tx-amount {
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .tx-amount.in { color: var(--green); }
+    .cashback-pill {
+      display: inline-block;
+      background: var(--yellow);
+      color: #111;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 99px;
+      margin-top: 2px;
+    }
+
+    /* Buttons & Inputs */
+    .btn-primary {
+      width: 100%;
+      border: none;
+      border-radius: 16px;
+      padding: 15px 18px;
+      background: var(--yellow);
+      color: #111;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.12s ease, background 0.15s ease;
+    }
+    .btn-primary:active {
+      transform: scale(0.98);
+      background: var(--yellow-press);
+    }
+    .btn-secondary {
+      width: 100%;
+      border: none;
+      border-radius: 16px;
+      padding: 14px 18px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.12s ease;
+    }
+    .btn-secondary:active { transform: scale(0.98); }
+
+    .field {
+      margin-bottom: 12px;
+    }
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sec);
+      margin-bottom: 6px;
+    }
+    .field input, .field select {
+      width: 100%;
+      border: 1.5px solid transparent;
+      background: var(--surface-2);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 13px 14px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.18s ease;
+    }
+    .field input:focus {
+      border-color: var(--yellow);
+    }
+
+    .chips-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .chips-scroll::-webkit-scrollbar { display: none; }
+    .chip {
+      border: none;
+      background: var(--surface-2);
+      color: var(--text);
+      padding: 8px 13px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+    .chip.active {
+      background: var(--yellow);
+      color: #111;
+    }
+    .chip:active { transform: scale(0.95); }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--nav-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 6px 6px calc(var(--safe-bottom) + 8px);
+      z-index: 30;
+    }
+    .nav-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-sec);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 4px 0;
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.18s ease, transform 0.15s ease;
+    }
+    .nav-btn.active {
+      color: var(--blue);
+    }
+    body.dark .nav-btn.active {
+      color: var(--yellow);
+    }
+    .nav-btn:active {
+      transform: scale(0.9);
+    }
+
+    /* Bottom Sheet Modal */
+    .sheet-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.46);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .sheet-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .sheet-panel {
+      background: var(--surface);
+      border-radius: 28px 28px 0 0;
+      max-height: 88dvh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      padding-bottom: calc(var(--safe-bottom) + 16px);
+    }
+    .sheet-backdrop.open .sheet-panel {
+      transform: translateY(0);
+    }
+    .sheet-handle-wrap {
+      padding: 10px 0 6px;
+      display: flex;
+      justify-content: center;
+      cursor: grab;
+      touch-action: none;
+    }
+    .sheet-handle {
+      width: 40px;
+      height: 5px;
+      border-radius: 99px;
+      background: rgba(125, 132, 145, 0.35);
+    }
+    .sheet-header {
+      padding: 4px 20px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sheet-title {
+      font-size: 19px;
+      font-weight: 700;
+    }
+    .sheet-body {
+      padding: 0 20px 8px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    /* Fullscreen Story Modal */
+    .story-overlay {
+      position: absolute;
+      inset: 0;
+      background: #111;
+      z-index: 90;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: calc(var(--safe-top) + 14px) 18px calc(var(--safe-bottom) + 24px);
+      color: #fff;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.96);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+    .story-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+    .story-bars {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 14px;
+    }
+    .story-bar {
+      flex: 1;
+      height: 3px;
+      background: rgba(255,255,255,0.28);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .story-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #fff;
+      transition: width 0.1s linear;
+    }
+
+    /* Push Notification Banner */
+    .push-banner {
+      position: absolute;
+      top: calc(var(--safe-top) + 10px);
+      left: 12px;
+      right: 12px;
+      background: rgba(25, 27, 31, 0.96);
+      color: #fff;
+      border-radius: 20px;
+      padding: 13px 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.32);
+      z-index: 100;
+      transform: translateY(-150%);
+      transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+      cursor: pointer;
+    }
+    .push-banner.show {
+      transform: translateY(0);
+    }
+
+    /* Chat */
+    .chat-wrap {
+      display: flex;
+      flex-direction: column;
+      height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 115px);
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-bottom: 12px;
+      scrollbar-width: none;
+    }
+    .chat-messages::-webkit-scrollbar { display: none; }
+    .bubble {
+      max-width: 82%;
+      padding: 11px 14px;
+      border-radius: 18px;
+      font-size: 14.5px;
+      line-height: 1.38;
+    }
+    .bubble.bot {
+      align-self: flex-start;
+      background: var(--surface);
+      border-bottom-left-radius: 5px;
+      box-shadow: var(--card-shadow);
+    }
+    .bubble.user {
+      align-self: flex-end;
+      background: var(--yellow);
+      color: #111;
+      font-weight: 500;
+      border-bottom-right-radius: 5px;
+    }
+    .chat-input-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding-top: 8px;
+    }
+    .chat-input-bar input {
+      flex: 1;
+      border: none;
+      background: var(--surface);
+      color: var(--text);
+      padding: 12px 15px;
+      border-radius: 99px;
+      font-size: 15px;
+      outline: none;
+      box-shadow: var(--card-shadow);
+    }
+
+    /* Plastic Card Visual */
+    .plastic-card {
+      border-radius: 22px;
+      padding: 20px;
+      background: linear-gradient(135deg, #1F2229 0%, #0D0E11 100%);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.22);
+      transition: filter 0.25s ease;
+    }
+    .plastic-card.frozen {
+      filter: saturate(0.2) brightness(1.1);
+      background: linear-gradient(135deg, #3A4B5C 0%, #1F2933 100%);
+    }
+
+    /* QR Scanner Laser */
+    .qr-box {
+      width: 210px;
+      height: 210px;
+      margin: 12px auto 18px;
+      border-radius: 26px;
+      background: #14161A;
+      position: relative;
+      overflow: hidden;
+      border: 3px solid var(--yellow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.65);
+      font-size: 13px;
+      text-align: center;
+      padding: 16px;
+    }
+    .qr-laser {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      height: 2.5px;
+      background: var(--yellow);
+      box-shadow: 0 0 12px var(--yellow);
+      animation: scan 2s infinite ease-in-out;
+    }
+    @keyframes scan {
+      0%, 100% { top: 18px; }
+      50% { top: 185px; }
+    }
+
+    /* Switch Toggle */
+    .switch {
+      width: 48px;
+      height: 28px;
+      border-radius: 99px;
+      background: var(--surface-2);
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border: none;
+    }
+    .switch.on { background: var(--yellow); }
+    .switch::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease;
+    }
+    .switch.on::after { transform: translateX(20px); background: #111; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Push Banner -->
+    <div id="push-banner" class="push-banner" onclick="hidePush()">
+      <div class="avatar" style="width:36px;height:36px;font-size:17px;">💛</div>
+      <div style="flex:1;min-width:0;">
+        <div id="push-title" style="font-weight:700;font-size:14px;">Пополнение счёта</div>
+        <div id="push-text" style="font-size:12.5px;color:#CBD2DC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">+5 000 ₽ · Black</div>
+      </div>
+      <div style="font-size:11px;color:#8E95A2;">сейчас</div>
+    </div>
+
+    <!-- Views -->
+    <div class="views-container">
+      <section id="view-home" class="view active"></section>
+      <section id="view-pay" class="view"></section>
+      <section id="view-city" class="view"></section>
+      <section id="view-chat" class="view"></section>
+      <section id="view-more" class="view"></section>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-tab="home" onclick="switchTab('home')">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5z"/></svg>
+        <span>Главная</span>
+      </button>
+      <button class="nav-btn" data-tab="pay" onclick="switchTab('pay')">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+        <span>Платежи</span>
+      </button>
+      <button class="nav-btn" data-tab="city" onclick="switchTab('city')">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span>Город</span>
+      </button>
+      <button class="nav-btn" data-tab="chat" onclick="switchTab('chat')">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Чат</span>
+      </button>
+      <button class="nav-btn" data-tab="more" onclick="switchTab('more')">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
+        <span>Ещё</span>
+      </button>
+    </nav>
+
+    <!-- Universal Swipeable Bottom Sheet -->
+    <div id="sheet-backdrop" class="sheet-backdrop" onclick="onBackdropClick(event)">
+      <div id="sheet-panel" class="sheet-panel">
+        <div id="sheet-handle" class="sheet-handle-wrap">
+          <div class="sheet-handle"></div>
+        </div>
+        <div class="sheet-header">
+          <div id="sheet-title" class="sheet-title">Детали</div>
+          <button class="icon-btn" style="width:32px;height:32px;background:var(--surface-2);box-shadow:none;" onclick="closeSheet()">✕</button>
+        </div>
+        <div id="sheet-body" class="sheet-body"></div>
+      </div>
+    </div>
+
+    <!-- Story Viewer -->
+    <div id="story-overlay" class="story-overlay">
+      <div>
+        <div id="story-bars" class="story-bars"></div>
+        <div class="row">
+          <div style="font-weight:700;font-size:14px;" id="story-tag">Подборка</div>
+          <button class="icon-btn" style="width:34px;height:34px;background:rgba(255,255,255,0.16);color:#fff;box-shadow:none;" onclick="closeStory()">✕</button>
+        </div>
+      </div>
+      <div id="story-tap-area" style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 4px;" onclick="onStoryTap(event)">
+        <div id="story-big-emoji" style="font-size:64px;margin-bottom:16px;">⚡</div>
+        <h2 id="story-heading" style="font-size:28px;font-weight:800;line-height:1.15;margin-bottom:12px;"></h2>
+        <p id="story-desc" style="font-size:16px;line-height:1.45;color:rgba(255,255,255,0.86);"></p>
+      </div>
+      <button id="story-cta" class="btn-primary">Попробовать</button>
+    </div>
+  </div>
+
+  <script>
+    // --- Telegram WebApp & PWA Init ---
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    window.addEventListener('DOMContentLoaded', () => {
+      if (tg) {
+        try {
+          tg.ready();
+          tg.expand();
+        } catch (e) {}
+      }
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      }
+    });
+
+    function haptic(type = 'light') {
+      try {
+        if (tg && tg.HapticFeedback) {
+          if (type === 'success' || type === 'error') {
+            tg.HapticFeedback.notificationOccurred(type);
+          } else {
+            tg.HapticFeedback.impactOccurred(type);
+          }
+        }
+      } catch (e) {}
+    }
+
+    // --- Initial Data & State ---
+    const STORAGE_KEY = 'yellow_ui_demo_state_v2';
+
+    const STORIES = [
+      { id: 's1', emoji: '🔥', title: 'Кэшбэк до 15%', bg: 'linear-gradient(145deg,#FF6B00,#FF2E63)', heading: 'Кэшбэк до 15% в разделе «Город»', desc: 'Заказывайте топливо, билеты в кино и доставку продуктов с мгновенным начислением бонусов на карту Black.', cta: 'Открыть Город', action: () => switchTab('city') },
+      { id: 's2', emoji: '💸', title: 'Переводы за 1 сек', bg: 'linear-gradient(145deg,#2563EB,#1D4ED8)', heading: 'Переводы по СБП без комиссии', desc: 'Отправляйте деньги по номеру телефона в любой банк мгновенно и с красивым электронным чеком.', cta: 'Сделать перевод', action: () => openTransferSheet() },
+      { id: 's3', emoji: '📈', title: '16% на остаток', bg: 'linear-gradient(145deg,#059669,#047857)', heading: 'Накопительный счёт под 16% годовых', desc: 'Пополняйте и снимайте деньги в любой момент без потери начисленных процентов.', cta: 'Перевести на счёт', action: () => openBetweenSheet() },
+      { id: 's4', emoji: '🎬', title: 'Режиссёр демо', bg: 'linear-gradient(145deg,#7C3AED,#4C1D95)', heading: 'Управляйте демо до мелочей', desc: 'Меняйте баланс на любую сумму, задавайте имя профиля и запускайте реалистичные входящие Push-уведомления по таймеру.', cta: 'Открыть настройки демо', action: () => openDirectorSheet() }
+    ];
+
+    const CONTACTS = [
+      { name: 'Марина К.', phone: '+7 916 440-12-89', avatar: '👩🏼' },
+      { name: 'Дмитрий С.', phone: '+7 926 815-03-44', avatar: '👨🏻' },
+      { name: 'Артём В.', phone: '+7 903 552-98-11', avatar: '🧔🏻' },
+      { name: 'Елена П.', phone: '+7 985 209-77-30', avatar: '👩🏻' }
+    ];
+
+    const ALL_CASHBACK_CATS = [
+      { name: 'Супермаркеты', rate: '5%', icon: '🛒' },
+      { name: 'Такси', rate: '7%', icon: '🚕' },
+      { name: 'Рестораны и кафе', rate: '5%', icon: '🍔' },
+      { name: 'Аптеки', rate: '5%', icon: '💊' },
+      { name: 'Топливо в Городе', rate: '10%', icon: '⛽' },
+      { name: 'Кино и концерты', rate: '15%', icon: '🎟️' },
+      { name: 'Маркетплейсы', rate: '3%', icon: '📦' }
+    ];
+
+    const CITY_ITEMS = [
+      { title: 'Топливо', desc: 'АЗС у вас по пути · кэшбэк 10%', price: 2200, cbRate: 0.10, cat: 'Топливо', icon: '⛽', color: '#FEF3C7' },
+      { title: 'Супермаркет с доставкой', desc: 'Привезём за 25 минут · кэшбэк 7%', price: 1650, cbRate: 0.07, cat: 'Супермаркеты', icon: '🥑', color: '#DCFCE7' },
+      { title: 'Афиша и Кино', desc: '2 билета на вечерний сеанс · 15%', price: 1100, cbRate: 0.15, cat: 'Развлечения', icon: '🍿', color: '#FCE7F3' },
+      { title: 'Авиабилеты', desc: 'Уикенд в Сочи · кэшбэк 5%', price: 8900, cbRate: 0.05, cat: 'Путешествия', icon: '✈️', color: '#DBEAFE' }
+    ];
+
+    function getDefaultState() {
+      return {
+        userName: 'Алексей',
+        darkMode: false,
+        hideBalance: false,
+        cardFrozen: false,
+        blackBalance: 148520.50,
+        savingsBalance: 320000.00,
+        cashback: 2840,
+        selectedCats: ['Супермаркеты', 'Такси', 'Рестораны и кафе', 'Топливо в Городе'],
+        storiesViewed: {},
+        searchQuery: '',
+        transactions: [
+          { id: 't1', title: 'ВкусВилл', subtitle: 'Супермаркеты', amount: 1480, type: 'out', cat: 'Супермаркеты', cashback: 74, time: 'Сегодня, 18:42', icon: '🍏', bg: '#DCFCE7' },
+          { id: 't2', title: 'Яндекс Go', subtitle: 'Такси', amount: 640, type: 'out', cat: 'Транспорт', cashback: 45, time: 'Сегодня, 14:15', icon: '🚕', bg: '#FEF9C3' },
+          { id: 't3', title: 'Дмитрий С.', subtitle: 'Входящий перевод СБП', amount: 5000, type: 'in', cat: 'Переводы', cashback: 0, time: 'Вчера, 20:10', icon: '💸', bg: '#DCFCE7' },
+          { id: 't4', title: 'Surf Coffee', subtitle: 'Рестораны и кафе', amount: 420, type: 'out', cat: 'Фастфуд', cashback: 21, time: 'Вчера, 10:08', icon: '☕', bg: '#FFEDD5' },
+          { id: 't5', title: 'АЗС Газпромнефть', subtitle: 'Топливо в Городе', amount: 2450, type: 'out', cat: 'Топливо', cashback: 245, time: '14 ноября, 19:30', icon: '⛽', bg: '#DBEAFE' }
+        ],
+        chat: [
+          { from: 'bot', text: 'Здравствуйте! Я виртуальный ассистент поддержки 24/7. Подскажу по кэшбэку, переводам или сформирую справку за секунду.' }
+        ]
+      };
+    }
+
+    let state = loadState();
+    let currentTab = 'home';
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return getDefaultState();
+        return Object.assign(getDefaultState(), JSON.parse(raw));
+      } catch (e) {
+        return getDefaultState();
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function fmtMoney(val, forceVisible = false) {
+      if (state.hideBalance && !forceVisible) return '••••• ₽';
+      const parts = Number(val).toFixed(2).split('.');
+      const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+      return parts[1] === '00' ? `${intPart} ₽` : `${intPart},${parts[1]} ₽`;
+    }
+
+    function getMonthlySpend() {
+      return state.transactions
+        .filter(t => t.type === 'out' && t.cat !== 'Сбережения')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+    }
+
+    function applyTheme() {
+      document.body.classList.toggle('dark', !!state.darkMode);
+      const meta = document.getElementById('meta-theme-color');
+      if (meta) meta.setAttribute('content', state.darkMode ? '#0F1012' : '#F6F7F8');
+    }
+
+    // --- Tab Navigation ---
+    function switchTab(tab) {
+      if (currentTab !== tab) haptic('light');
+      currentTab = tab;
+      document.querySelectorAll('.view').forEach(el => {
+        el.classList.toggle('active', el.id === `view-${tab}`);
+      });
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+      renderAll();
+    }
+
+    // --- Push Notification ---
+    let pushTimer = null;
+    function showPush(title, text) {
+      haptic('success');
+      document.getElementById('push-title').textContent = title;
+      document.getElementById('push-text').textContent = text;
+      const banner = document.getElementById('push-banner');
+      banner.classList.add('show');
+      clearTimeout(pushTimer);
+      pushTimer = setTimeout(() => banner.classList.remove('show'), 4000);
+    }
+    function hidePush() {
+      document.getElementById('push-banner').classList.remove('show');
+    }
+
+    // --- Render Views ---
+    function renderAll() {
+      applyTheme();
+      renderHome();
+      renderPay();
+      renderCity();
+      renderChat();
+      renderMore();
+    }
+
+    function renderHome() {
+      const spend = getMonthlySpend();
+      const q = (state.searchQuery || '').trim().toLowerCase();
+      const filteredTx = q
+        ? state.transactions.filter(t => t.title.toLowerCase().includes(q) || t.subtitle.toLowerCase().includes(q))
+        : state.transactions.slice(0, 5);
+
+      document.getElementById('view-home').innerHTML = `
+        <div class="top-bar">
+          <div class="profile-pill" onclick="openDirectorSheet()">
+            <div class="avatar">${(state.userName || 'А')[0].toUpperCase()}</div>
+            <div>
+              <div class="profile-name">${escapeHtml(state.userName)} <span style="opacity:0.45;font-size:14px;">›</span></div>
+              <div class="muted" style="font-size:11.5px;">Управление демо</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="icon-btn" title="Скрыть баланс" onclick="toggleHideBalance()">
+              ${state.hideBalance ? '🙈' : '👁️'}
+            </button>
+            <button class="icon-btn" title="Настройки демо" onclick="openDirectorSheet()">🎬</button>
+          </div>
+        </div>
+
+        <div class="search-box">
+          <span style="opacity:0.55;">🔍</span>
+          <input type="text" placeholder="Поиск операций и переводов" value="${escapeHtml(state.searchQuery)}" oninput="onSearchInput(this.value)" />
+          ${state.searchQuery ? `<span style="cursor:pointer;opacity:0.6;" onclick="onSearchInput('')">✕</span>` : ''}
+        </div>
+
+        ${!q ? `
+        <div class="stories-row">
+          ${STORIES.map((s, idx) => `
+            <div class="story-item ${state.storiesViewed[s.id] ? 'viewed' : ''}" onclick="openStory(${idx})">
+              <div class="story-inner" style="background:${s.bg};">
+                <div class="story-emoji">${s.emoji}</div>
+                <div>${s.title}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="actions-row">
+          <button class="action-btn" onclick="openTransferSheet()">
+            <div class="action-circle">↗</div>
+            <span>Перевести</span>
+          </button>
+          <button class="action-btn" onclick="openTopUpSheet()">
+            <div class="action-circle">＋</div>
+            <span>Пополнить</span>
+          </button>
+          <button class="action-btn" onclick="openQrSheet()">
+            <div class="action-circle">⊞</div>
+            <span>QR-код</span>
+          </button>
+          <button class="action-btn" onclick="openBetweenSheet()">
+            <div class="action-circle">⇄</div>
+            <span>Между сч.</span>
+          </button>
+        </div>
+
+        <div class="grid-2">
+          <div class="mini-card" onclick="openAnalyticsSheet()">
+            <div class="muted" style="font-weight:600;">Траты за ноябрь</div>
+            <div style="font-size:18px;font-weight:800;margin-top:4px;">${fmtMoney(spend)}</div>
+            <div class="spend-bar">
+              <div style="width:42%;background:#22C55E;"></div>
+              <div style="width:26%;background:#3B82F6;"></div>
+              <div style="width:19%;background:#F59E0B;"></div>
+              <div style="width:13%;background:#EC4899;"></div>
+            </div>
+          </div>
+          <div class="mini-card" onclick="openCashbackSheet()">
+            <div class="muted" style="font-weight:600;">Кэшбэк и бонусы</div>
+            <div style="font-size:18px;font-weight:800;margin-top:4px;">${state.hideBalance ? '••• ₽' : state.cashback + ' ₽'}</div>
+            <div style="margin-top:9px;display:flex;gap:5px;align-items:center;">
+              <span class="cashback-pill">4 категории</span>
+              <span class="muted" style="font-size:11px;">до 15%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card tap" onclick="openCardSheet()">
+          <div class="account-row">
+            <div class="acc-icon" style="background:#FFDD2D;color:#111;">₽</div>
+            <div style="flex:1;">
+              <div style="display:flex;align-items:center;">
+                <span class="muted" style="font-weight:600;">Дебетовая Black</span>
+                ${state.cardFrozen ? `<span class="frozen-badge">Заморожена</span>` : ''}
+              </div>
+              <div style="font-size:22px;font-weight:800;margin-top:2px;">${fmtMoney(state.blackBalance)}</div>
+              <div class="card-chip-mini">💳 •• 4821 · МИР</div>
+            </div>
+            <span style="opacity:0.35;font-size:20px;">›</span>
+          </div>
+        </div>
+
+        <div class="card tap" onclick="openBetweenSheet()">
+          <div class="account-row">
+            <div class="acc-icon" style="background:#DBEAFE;color:#1D4ED8;">🏦</div>
+            <div style="flex:1;">
+              <div class="muted" style="font-weight:600;">Накопительный счёт · 16%</div>
+              <div style="font-size:20px;font-weight:800;margin-top:2px;">${fmtMoney(state.savingsBalance)}</div>
+            </div>
+            <span style="opacity:0.35;font-size:20px;">›</span>
+          </div>
+        </div>
+        ` : ''}
+
+        <div class="card">
+          <div class="row" style="margin-bottom:6px;">
+            <div style="font-size:17px;font-weight:700;">${q ? 'Результаты поиска' : 'Последние операции'}</div>
+            <button style="border:none;background:none;color:var(--blue);font-weight:600;font-size:13.5px;cursor:pointer;" onclick="openAnalyticsSheet()">Все</button>
+          </div>
+          ${filteredTx.length ? filteredTx.map(renderTxRow).join('') : `<div class="muted" style="padding:18px 0;text-align:center;">Ничего не найдено</div>`}
+        </div>
+      `;
+    }
+
+    function renderTxRow(t) {
+      const sign = t.type === 'in' ? '+' : '−';
+      return `
+        <div class="tx-item" onclick="openReceiptSheet('${t.id}')">
+          <div class="tx-left">
+            <div class="tx-avatar" style="background:${t.bg || 'var(--surface-2)'};">${t.icon || '💳'}</div>
+            <div style="min-width:0;">
+              <div class="tx-title">${escapeHtml(t.title)}</div>
+              <div class="muted">${escapeHtml(t.subtitle)} · ${t.time}</div>
+            </div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-amount ${t.type}">${sign}${fmtMoney(t.amount, true)}</div>
+            ${t.cashback > 0 ? `<div class="cashback-pill">+${t.cashback} ₽</div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPay() {
+      document.getElementById('view-pay').innerHTML = `
+        <div class="section-title" style="font-size:24px;margin-top:2px;">Платежи и переводы</div>
+
+        <div class="card">
+          <div style="font-weight:700;font-size:16px;margin-bottom:12px;">Перевод по телефону (СБП)</div>
+          <div class="chips-scroll" style="margin-bottom:12px;">
+            ${CONTACTS.map(c => `
+              <button class="chip" onclick="openTransferSheet('${c.name}', '${c.phone}')">${c.avatar} ${c.name}</button>
+            `).join('')}
+          </div>
+          <button class="btn-primary" onclick="openTransferSheet()">Перевести по номеру или контакту</button>
+        </div>
+
+        <div class="grid-2">
+          <div class="mini-card" onclick="openBetweenSheet()">
+            <div style="font-size:24px;margin-bottom:8px;">⇄</div>
+            <div style="font-weight:700;font-size:14.5px;">Между счетами</div>
+            <div class="muted" style="margin-top:3px;">Мгновенно без комиссии</div>
+          </div>
+          <div class="mini-card" onclick="openQrSheet()">
+            <div style="font-size:24px;margin-bottom:8px;">📷</div>
+            <div style="font-weight:700;font-size:14.5px;">Оплата по QR</div>
+            <div class="muted" style="margin-top:3px;">СБП и кассы магазинов</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:700;font-size:16px;margin-bottom:8px;">Оплата услуг</div>
+          ${[
+            { name: 'Мобильная связь', sub: 'МТС, Билайн, МегаФон, Т2', icon: '📱', def: 650 },
+            { name: 'ЖКХ и квартплата', sub: 'По лицевому счёту без комиссии', icon: '🏠', def: 4200 },
+            { name: 'Домашний интернет', sub: 'Ростелеком, Дом.ру, МГТС', icon: '🌐', def: 790 },
+            { name: 'Игры и подписки', sub: 'Пополнение кошелька Steam и сервисов', icon: '🎮', def: 1000 }
+          ].map(s => `
+            <div class="tx-item" onclick="openServiceSheet('${s.name}', '${s.icon}', ${s.def})">
+              <div class="tx-left">
+                <div class="tx-avatar" style="background:var(--surface-2);">${s.icon}</div>
+                <div>
+                  <div class="tx-title">${s.name}</div>
+                  <div class="muted">${s.sub}</div>
+                </div>
+              </div>
+              <span style="opacity:0.4;font-size:18px;">›</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderCity() {
+      document.getElementById('view-city').innerHTML = `
+        <div class="section-title" style="font-size:24px;margin-top:2px;">Город</div>
+        <div class="card" style="background:linear-gradient(135deg,#FFDD2D 0%,#FFB800 100%);color:#111;">
+          <div style="font-size:13px;font-weight:700;opacity:0.8;">ПОВЫШЕННАЯ ВЫГОДА</div>
+          <div style="font-size:21px;font-weight:800;margin:4px 0 6px;">Кэшбэк до 15% за покупки</div>
+          <div style="font-size:13.5px;opacity:0.85;">Все бонусы начисляются сразу после тестовой оплаты и отображаются на Главной.</div>
+        </div>
+
+        ${CITY_ITEMS.map((item, i) => `
+          <div class="card tap" onclick="openCityOrder(${i})">
+            <div class="row">
+              <div style="display:flex;align-items:center;gap:13px;">
+                <div class="tx-avatar" style="width:48px;height:48px;font-size:23px;background:${item.color};">${item.icon}</div>
+                <div>
+                  <div style="font-weight:700;font-size:16px;">${item.title}</div>
+                  <div class="muted" style="margin-top:2px;">${item.desc}</div>
+                  <div style="margin-top:6px;font-weight:700;font-size:14px;">от ${fmtMoney(item.price, true)}</div>
+                </div>
+              </div>
+              <button class="chip active" style="pointer-events:none;">Купить</button>
+            </div>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    function renderChat() {
+      const quickPrompts = [
+        'Где посмотреть кэшбэк?',
+        'Справка о доступном остатке',
+        'Лимиты переводов СБП'
+      ];
+      document.getElementById('view-chat').innerHTML = `
+        <div class="section-title" style="font-size:22px;margin-top:2px;">Поддержка 24/7</div>
+        <div class="chat-wrap">
+          <div id="chat-scroll" class="chat-messages">
+            ${state.chat.map(m => `<div class="bubble ${m.from}">${escapeHtml(m.text)}</div>`).join('')}
+          </div>
+          <div class="chips-scroll" style="margin-bottom:6px;">
+            ${quickPrompts.map(p => `<button class="chip" onclick="sendChatMessage('${p}')">${p}</button>`).join('')}
+          </div>
+          <form class="chat-input-bar" onsubmit="onChatSubmit(event)">
+            <input id="chat-input" type="text" placeholder="Написать сообщение..." autocomplete="off" />
+            <button type="submit" class="action-circle" style="border:none;cursor:pointer;flex-shrink:0;">➤</button>
+          </form>
+        </div>
+      `;
+      const sc = document.getElementById('chat-scroll');
+      if (sc) sc.scrollTop = sc.scrollHeight;
+    }
+
+    function renderMore() {
+      document.getElementById('view-more').innerHTML = `
+        <div class="section-title" style="font-size:24px;margin-top:2px;">Ещё</div>
+
+        <div class="card">
+          <div class="row" style="margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="avatar" style="width:48px;height:48px;font-size:20px;">${(state.userName || 'А')[0].toUpperCase()}</div>
+              <div>
+                <div style="font-size:18px;font-weight:800;">${escapeHtml(state.userName)}</div>
+                <div class="muted">Тариф Pro · Демо-профиль</div>
+              </div>
+            </div>
+            <button class="chip" onclick="openDirectorSheet()">Изменить</button>
+          </div>
+          <button class="btn-primary" onclick="openDirectorSheet()">🎬 Открыть «Режиссёр демо»</button>
+        </div>
+
+        <div class="card">
+          <div class="row" style="padding:8px 0;border-bottom:1px solid var(--border);">
+            <div>
+              <div style="font-weight:600;font-size:15.5px;">Тёмная тема</div>
+              <div class="muted">Плавное переключение палитры</div>
+            </div>
+            <button class="switch ${state.darkMode ? 'on' : ''}" onclick="toggleDarkMode()"></button>
+          </div>
+          <div class="row" style="padding:12px 0 4px;">
+            <div>
+              <div style="font-weight:600;font-size:15.5px;">Скрывать балансы</div>
+              <div class="muted">Маскировка сумм на главном экране</div>
+            </div>
+            <button class="switch ${state.hideBalance ? 'on' : ''}" onclick="toggleHideBalance()"></button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:700;font-size:16px;margin-bottom:8px;">Быстрые демо-сценарии</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn-secondary" onclick="triggerIncomingDemo(15000, 'Алексей В.', 3500)">⏱ Входящий перевод +15 000 ₽ через 3.5 сек</button>
+            <button class="btn-secondary" onclick="resetDemoState()" style="color:var(--red);">Сбросить демо к начальным данным</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- Interactive Actions ---
+    function onSearchInput(val) {
+      state.searchQuery = val;
+      renderHome();
+      const input = document.querySelector('#view-home .search-box input');
+      if (input) {
+        input.focus();
+        input.setSelectionRange(val.length, val.length);
+      }
+    }
+
+    function toggleHideBalance() {
+      haptic('light');
+      state.hideBalance = !state.hideBalance;
+      saveState();
+      renderAll();
+    }
+
+    function toggleDarkMode() {
+      haptic('light');
+      state.darkMode = !state.darkMode;
+      saveState();
+      renderAll();
+    }
+
+    // --- Bottom Sheet Engine + Touch Drag ---
+    function openSheet(title, html) {
+      haptic('light');
+      document.getElementById('sheet-title').textContent = title;
+      document.getElementById('sheet-body').innerHTML = html;
+      const panel = document.getElementById('sheet-panel');
+      panel.style.transform = '';
+      document.getElementById('sheet-backdrop').classList.add('open');
+    }
+
+    function closeSheet() {
+      document.getElementById('sheet-backdrop').classList.remove('open');
+    }
+
+    function onBackdropClick(e) {
+      if (e.target.id === 'sheet-backdrop') closeSheet();
+    }
+
+    // Swipe down gesture on sheet handle
+    (() => {
+      let startY = 0, currentY = 0, dragging = false;
+      const handle = document.getElementById('sheet-handle');
+      const panel = document.getElementById('sheet-panel');
+      handle.addEventListener('touchstart', e => {
+        startY = e.touches[0].clientY;
+        dragging = true;
+        panel.style.transition = 'none';
+      }, { passive: true });
+      window.addEventListener('touchmove', e => {
+        if (!dragging) return;
+        currentY = Math.max(0, e.touches[0].clientY - startY);
+        panel.style.transform = `translateY(${currentY}px)`;
+      }, { passive: true });
+      window.addEventListener('touchend', () => {
+        if (!dragging) return;
+        dragging = false;
+        panel.style.transition = '';
+        if (currentY > 95) {
+          closeSheet();
+        } else {
+          panel.style.transform = '';
+        }
+        currentY = 0;
+      });
+    })();
+
+    // --- Transfer Sheet ---
+    function openTransferSheet(prefillName = '', prefillPhone = '') {
+      if (state.cardFrozen) {
+        openSheet('Карта заморожена', `
+          <div style="text-align:center;padding:14px 0 18px;">
+            <div style="font-size:48px;margin-bottom:10px;">❄️</div>
+            <div style="font-weight:700;font-size:17px;margin-bottom:6px;">Операции временно приостановлены</div>
+            <div class="muted" style="margin-bottom:18px;">Разморозьте карту Black, чтобы отправлять переводы.</div>
+            <button class="btn-primary" onclick="toggleFreezeCard(true)">Разморозить карту</button>
+          </div>
+        `);
+        return;
+      }
+      openSheet('Перевод по СБП', `
+        <div class="muted" style="margin-bottom:12px;">Доступно на Black: <b>${fmtMoney(state.blackBalance, true)}</b></div>
+        <div class="chips-scroll" style="margin-bottom:12px;">
+          ${CONTACTS.map(c => `<button type="button" class="chip" onclick="fillRecipient('${c.name}', '${c.phone}')">${c.avatar} ${c.name}</button>`).join('')}
+        </div>
+        <div class="field">
+          <label>Получатель или телефон</label>
+          <input id="tf-to" type="text" placeholder="+7 999 000-00-00 или имя" value="${escapeHtml(prefillName || prefillPhone)}" />
+        </div>
+        <div class="field">
+          <label>Банк получателя</label>
+          <select id="tf-bank">
+            <option>Сбербанк (СБП · без комиссии)</option>
+            <option>Т-Демо (внутри банка)</option>
+            <option>Альфа-Банк (СБП)</option>
+            <option>ВТБ (СБП)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Сумма, ₽</label>
+          <input id="tf-amount" type="number" inputmode="decimal" placeholder="1000" value="1000" />
+        </div>
+        <div class="chips-scroll" style="margin-bottom:12px;">
+          ${[500, 1000, 2500, 5000].map(v => `<button type="button" class="chip" onclick="document.getElementById('tf-amount').value=${v}">${v} ₽</button>`).join('')}
+        </div>
+        <div class="field">
+          <label>Сообщение получателю (необязательно)</label>
+          <input id="tf-msg" type="text" placeholder="За обед 🙌" />
+        </div>
+        <div id="tf-err" style="color:var(--red);font-size:13px;margin-bottom:8px;display:none;"></div>
+        <button class="btn-primary" onclick="submitTransfer()">Перевести без комиссии</button>
+      `);
+    }
+
+    function fillRecipient(name) {
+      haptic('light');
+      const el = document.getElementById('tf-to');
+      if (el) el.value = name;
+    }
+
+    function submitTransfer() {
+      const to = (document.getElementById('tf-to').value || '').trim() || 'По номеру телефона';
+      const bank = document.getElementById('tf-bank').value.split(' ')[0];
+      const amount = parseFloat(document.getElementById('tf-amount').value);
+      const err = document.getElementById('tf-err');
+
+      if (!amount || amount <= 0) {
+        err.textContent = 'Введите корректную сумму перевода';
+        err.style.display = 'block';
+        haptic('error');
+        return;
+      }
+      if (amount > state.blackBalance) {
+        err.textContent = 'Недостаточно средств на карте Black';
+        err.style.display = 'block';
+        haptic('error');
+        return;
+      }
+
+      state.blackBalance = +(state.blackBalance - amount).toFixed(2);
+      const tx = {
+        id: 'tx_' + Date.now(),
+        title: to,
+        subtitle: `Перевод СБП · ${bank}`,
+        amount,
+        type: 'out',
+        cat: 'Переводы',
+        cashback: 0,
+        time: 'Только что',
+        icon: '↗️',
+        bg: '#DBEAFE'
+      };
+      state.transactions.unshift(tx);
+      saveState();
+      renderAll();
+      haptic('success');
+
+      document.getElementById('sheet-title').textContent = 'Перевод выполнен';
+      document.getElementById('sheet-body').innerHTML = `
+        <div style="text-align:center;padding:12px 0 18px;">
+          <div style="width:66px;height:66px;border-radius:50%;background:#DCFCE7;color:#16A34A;font-size:34px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">✓</div>
+          <div style="font-size:28px;font-weight:800;">−${fmtMoney(amount, true)}</div>
+          <div class="muted" style="margin-top:4px;font-size:14px;">Получатель: <b>${escapeHtml(to)}</b> (${bank})</div>
+          <div class="muted" style="margin-top:2px;">Комиссия: 0 ₽</div>
+          <div style="margin-top:20px;display:flex;gap:10px;">
+            <button class="btn-secondary" onclick="openReceiptSheet('${tx.id}')">Чек операции</button>
+            <button class="btn-primary" onclick="closeSheet()">Готово</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- Top Up & Between Accounts ---
+    function openTopUpSheet() {
+      openSheet('Пополнить карту Black', `
+        <div class="field">
+          <label>Откуда пополнить</label>
+          <select id="topup-src">
+            <option value="sbp">С моего счёта в другом банке (СБП)</option>
+            <option value="savings">С накопительного счёта (${fmtMoney(state.savingsBalance, true)})</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Сумма пополнения, ₽</label>
+          <input id="topup-amt" type="number" inputmode="decimal" value="10000" />
+        </div>
+        <div class="chips-scroll" style="margin-bottom:14px;">
+          ${[1000, 5000, 15000, 50000].map(v => `<button class="chip" onclick="document.getElementById('topup-amt').value=${v}">+${v} ₽</button>`).join('')}
+        </div>
+        <button class="btn-primary" onclick="submitTopUp()">Пополнить мгновенно</button>
+      `);
+    }
+
+    function submitTopUp() {
+      const src = document.getElementById('topup-src').value;
+      const amt = parseFloat(document.getElementById('topup-amt').value);
+      if (!amt || amt <= 0) return;
+      if (src === 'savings') {
+        if (amt > state.savingsBalance) {
+          showPush('Недостаточно средств', 'На накопительном счёте меньше указанной суммы');
+          return;
+        }
+        state.savingsBalance = +(state.savingsBalance - amt).toFixed(2);
+      }
+      state.blackBalance = +(state.blackBalance + amt).toFixed(2);
+      state.transactions.unshift({
+        id: 'tx_' + Date.now(),
+        title: src === 'savings' ? 'С накопительного счёта' : 'Пополнение через СБП',
+        subtitle: 'Пополнение карты Black',
+        amount: amt,
+        type: 'in',
+        cat: 'Сбережения',
+        cashback: 0,
+        time: 'Только что',
+        icon: '➕',
+        bg: '#DCFCE7'
+      });
+      saveState();
+      closeSheet();
+      renderAll();
+      showPush('Счёт пополнен', `+${fmtMoney(amt, true)} зачислено на карту Black`);
+    }
+
+    function openBetweenSheet() {
+      openSheet('Между своими счетами', `
+        <div class="field">
+          <label>Направление перевода</label>
+          <select id="bw-dir">
+            <option value="to_sav">С карты Black → На накопительный (16%)</option>
+            <option value="to_blk">С накопительного → На карту Black</option>
+          </select>
+        </div>
+        <div class="muted" style="margin-bottom:12px;">
+          Black: <b>${fmtMoney(state.blackBalance, true)}</b> · Накопительный: <b>${fmtMoney(state.savingsBalance, true)}</b>
+        </div>
+        <div class="field">
+          <label>Сумма, ₽</label>
+          <input id="bw-amt" type="number" inputmode="decimal" value="5000" />
+        </div>
+        <button class="btn-primary" onclick="submitBetween()">Перевести</button>
+      `);
+    }
+
+    function submitBetween() {
+      const dir = document.getElementById('bw-dir').value;
+      const amt = parseFloat(document.getElementById('bw-amt').value);
+      if (!amt || amt <= 0) return;
+      if (dir === 'to_sav') {
+        if (amt > state.blackBalance) { showPush('Ошибка', 'Недостаточно средств на Black'); return; }
+        state.blackBalance = +(state.blackBalance - amt).toFixed(2);
+        state.savingsBalance = +(state.savingsBalance + amt).toFixed(2);
+      } else {
+        if (amt > state.savingsBalance) { showPush('Ошибка', 'Недостаточно средств на накопительном счёте'); return; }
+        state.savingsBalance = +(state.savingsBalance - amt).toFixed(2);
+        state.blackBalance = +(state.blackBalance + amt).toFixed(2);
+      }
+      state.transactions.unshift({
+        id: 'tx_' + Date.now(),
+        title: dir === 'to_sav' ? 'На накопительный счёт' : 'С накопительного счёта',
+        subtitle: 'Между своими счетами',
+        amount: amt,
+        type: dir === 'to_sav' ? 'out' : 'in',
+        cat: 'Сбережения',
+        cashback: 0,
+        time: 'Только что',
+        icon: '⇄',
+        bg: '#E0E7FF'
+      });
+      saveState();
+      closeSheet();
+      renderAll();
+      showPush('Перевод выполнен', `${fmtMoney(amt, true)} переведено между счетами`);
+    }
+
+    // --- QR Payment Simulation ---
+    function openQrSheet() {
+      openSheet('Сканирование QR-кода', `
+        <div class="qr-box">
+          <div class="qr-laser"></div>
+          <div>Наведите камеру на QR-код СБП или нажмите кнопку тестовой оплаты ниже</div>
+        </div>
+        <button class="btn-primary" onclick="payQrDemo()">Оплатить тестовый QR · Кофейня 390 ₽</button>
+      `);
+    }
+
+    function payQrDemo() {
+      if (state.blackBalance < 390) { showPush('Ошибка', 'Недостаточно средств'); return; }
+      state.blackBalance = +(state.blackBalance - 390).toFixed(2);
+      const cb = 20;
+      state.cashback += cb;
+      state.transactions.unshift({
+        id: 'tx_' + Date.now(),
+        title: 'Даблби Кофе (QR СБП)',
+        subtitle: 'Рестораны и кафе',
+        amount: 390,
+        type: 'out',
+        cat: 'Фастфуд',
+        cashback: cb,
+        time: 'Только что',
+        icon: '☕',
+        bg: '#FFEDD5'
+      });
+      saveState();
+      closeSheet();
+      renderAll();
+      showPush('Оплата по QR прошла', `−390 ₽ · Начислен кэшбэк +${cb} ₽`);
+    }
+
+    // --- Card Details Sheet ---
+    let showCardSecret = false;
+    function openCardSheet() {
+      const pan = showCardSecret ? '2200 7008 9412 4821' : '2200 70•• •••• 4821';
+      const cvv = showCardSecret ? '742' : '•••';
+      openSheet('Карта Black', `
+        <div class="plastic-card ${state.cardFrozen ? 'frozen' : ''}">
+          <div class="row" style="margin-bottom:26px;">
+            <span style="font-weight:800;letter-spacing:0.04em;color:#FFDD2D;">YELLOW BLACK</span>
+            <span style="font-size:13px;opacity:0.8;">${state.cardFrozen ? '❄️ Заморожена' : 'МИР'}</span>
+          </div>
+          <div style="font-size:20px;font-weight:700;letter-spacing:0.08em;margin-bottom:14px;">${pan}</div>
+          <div class="row" style="font-size:13px;opacity:0.82;">
+            <span>Срок: 09/29</span>
+            <span>CVV: ${cvv}</span>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          <button class="btn-secondary" onclick="toggleCardSecrets()">${showCardSecret ? '🙈 Скрыть' : '👁 Реквизиты'}</button>
+          <button class="btn-secondary" onclick="copyCardNumber()">📋 Скопировать №</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button class="btn-secondary" onclick="toggleFreezeCard(false)">${state.cardFrozen ? '🔥 Разморозить' : '❄️ Заморозить'}</button>
+          <button class="btn-primary" onclick="openTopUpSheet()">＋ Пополнить</button>
+        </div>
+      `);
+    }
+
+    function toggleCardSecrets() {
+      haptic('light');
+      showCardSecret = !showCardSecret;
+      openCardSheet();
+    }
+
+    function copyCardNumber() {
+      navigator.clipboard && navigator.clipboard.writeText('2200700894124821').catch(() => {});
+      showPush('Скопировано', 'Номер карты 2200 •••• 4821 скопирован в буфер обмена');
+    }
+
+    function toggleFreezeCard(closeAfter) {
+      state.cardFrozen = !state.cardFrozen;
+      saveState();
+      renderAll();
+      if (closeAfter) {
+        closeSheet();
+        showPush('Карта активна', 'Заморозка снята — платежи снова доступны');
+      } else {
+        openCardSheet();
+      }
+    }
+
+    // --- Analytics & Receipt Sheets ---
+    function openAnalyticsSheet(filterCat = 'Все') {
+      const cats = ['Все', 'Супермаркеты', 'Переводы', 'Топливо', 'Фастфуд'];
+      const list = filterCat === 'Все'
+        ? state.transactions
+        : state.transactions.filter(t => t.cat === filterCat);
+
+      openSheet('Аналитика и история', `
+        <div style="font-size:26px;font-weight:800;margin-bottom:4px;">${fmtMoney(getMonthlySpend(), true)}</div>
+        <div class="muted" style="margin-bottom:12px;">Расходы в ноябре · Нажмите на операцию для чека</div>
+        <div class="chips-scroll" style="margin-bottom:12px;">
+          ${cats.map(c => `<button class="chip ${c === filterCat ? 'active' : ''}" onclick="openAnalyticsSheet('${c}')">${c}</button>`).join('')}
+        </div>
+        <div>${list.length ? list.map(renderTxRow).join('') : `<div class="muted" style="padding:20px 0;text-align:center;">Нет операций в этой категории</div>`}</div>
+      `);
+    }
+
+    function openReceiptSheet(txId) {
+      const tx = state.transactions.find(x => x.id === txId);
+      if (!tx) return;
+      const sign = tx.type === 'in' ? '+' : '−';
+      openSheet('Детали операции', `
+        <div style="text-align:center;padding:8px 0 16px;">
+          <div class="tx-avatar" style="width:58px;height:58px;font-size:28px;margin:0 auto 10px;background:${tx.bg || 'var(--surface-2)'};">${tx.icon}</div>
+          <div style="font-size:26px;font-weight:800;" class="tx-amount ${tx.type}">${sign}${fmtMoney(tx.amount, true)}</div>
+          <div style="font-weight:700;font-size:16px;margin-top:4px;">${escapeHtml(tx.title)}</div>
+          <div class="muted" style="margin-top:2px;">${escapeHtml(tx.subtitle)} · ${tx.time}</div>
+        </div>
+        <div class="card" style="background:var(--surface-2);box-shadow:none;">
+          <div class="row" style="margin-bottom:8px;"><span class="muted">Статус</span><b style="color:var(--green);">Исполнено ✓</b></div>
+          <div class="row" style="margin-bottom:8px;"><span class="muted">Счёт</span><b>Карта Black •• 4821</b></div>
+          <div class="row"><span class="muted">Кэшбэк</span><b>${tx.cashback > 0 ? '+' + tx.cashback + ' ₽' : '—'}</b></div>
+        </div>
+        <button class="btn-primary" onclick="closeSheet()">Закрыть</button>
+      `);
+    }
+
+    // --- Cashback Categories Sheet ---
+    function openCashbackSheet() {
+      openSheet('Повышенный кэшбэк', `
+        <div class="muted" style="margin-bottom:12px;">Накоплено к выплате: <b>${state.cashback} ₽</b> · Выбрано ${state.selectedCats.length} из 4 категорий:</div>
+        ${ALL_CASHBACK_CATS.map(c => {
+          const picked = state.selectedCats.includes(c.name);
+          return `
+            <div class="tx-item" onclick="toggleCat('${c.name}')">
+              <div class="tx-left">
+                <div class="tx-avatar" style="background:var(--surface-2);">${c.icon}</div>
+                <div>
+                  <div class="tx-title">${c.name}</div>
+                  <div class="muted">Кэшбэк ${c.rate} рублями</div>
+                </div>
+              </div>
+              <div style="width:26px;height:26px;border-radius:8px;background:${picked ? 'var(--yellow)' : 'var(--surface-2)'};color:#111;display:flex;align-items:center;justify-content:center;font-weight:800;">
+                ${picked ? '✓' : ''}
+              </div>
+            </div>
+          `;
+        }).join('')}
+        <button class="btn-primary" style="margin-top:12px;" onclick="closeSheet()">Сохранить выбор</button>
+      `);
+    }
+
+    function toggleCat(name) {
+      haptic('light');
+      const idx = state.selectedCats.indexOf(name);
+      if (idx >= 0) {
+        state.selectedCats.splice(idx, 1);
+      } else if (state.selectedCats.length < 4) {
+        state.selectedCats.push(name);
+      } else {
+        showPush('Лимит 4 категории', 'Снимите галочку с одной из категорий, чтобы выбрать новую');
+        return;
+      }
+      saveState();
+      openCashbackSheet();
+    }
+
+    // --- Service & City Payments ---
+    function openServiceSheet(name, icon, defAmt) {
+      openSheet(name, `
+        <div class="field">
+          <label>Номер счёта / телефона</label>
+          <input id="srv-acc" type="text" value="+7 999 123-45-67" />
+        </div>
+        <div class="field">
+          <label>Сумма оплаты, ₽</label>
+          <input id="srv-amt" type="number" value="${defAmt}" />
+        </div>
+        <button class="btn-primary" onclick="payService('${name}', '${icon}')">Оплатить с карты Black</button>
+      `);
+    }
+
+    function payService(name, icon) {
+      const amt = parseFloat(document.getElementById('srv-amt').value);
+      if (!amt || amt <= 0 || amt > state.blackBalance) {
+        showPush('Ошибка оплаты', 'Проверьте сумму и баланс карты Black');
+        return;
+      }
+      const cb = Math.max(1, Math.round(amt * 0.01));
+      state.blackBalance = +(state.blackBalance - amt).toFixed(2);
+      state.cashback += cb;
+      state.transactions.unshift({
+        id: 'tx_' + Date.now(),
+        title: name,
+        subtitle: 'Платежи и услуги',
+        amount: amt,
+        type: 'out',
+        cat: 'Платежи',
+        cashback: cb,
+        time: 'Только что',
+        icon,
+        bg: '#F3E8FF'
+      });
+      saveState();
+      closeSheet();
+      renderAll();
+      showPush('Услуга оплачена', `−${fmtMoney(amt, true)} · Кэшбэк +${cb} ₽`);
+    }
+
+    function openCityOrder(idx) {
+      const item = CITY_ITEMS[idx];
+      const cb = Math.round(item.price * item.cbRate);
+      openSheet(item.title, `
+        <div class="muted" style="margin-bottom:14px;">${item.desc}</div>
+        <div class="card" style="background:var(--surface-2);box-shadow:none;">
+          <div class="row" style="margin-bottom:8px;"><span>К оплате</span><b>${fmtMoney(item.price, true)}</b></div>
+          <div class="row"><span>Повышенный кэшбэк</span><span class="cashback-pill">+${cb} ₽</span></div>
+        </div>
+        <button class="btn-primary" onclick="confirmCityOrder(${idx})">Оплатить ${fmtMoney(item.price, true)}</button>
+      `);
+    }
+
+    function confirmCityOrder(idx) {
+      const item = CITY_ITEMS[idx];
+      if (state.blackBalance < item.price) {
+        showPush('Недостаточно средств', 'Пополните карту Black для оплаты заказа');
+        return;
+      }
+      const cb = Math.round(item.price * item.cbRate);
+      state.blackBalance = +(state.blackBalance - item.price).toFixed(2);
+      state.cashback += cb;
+      state.transactions.unshift({
+        id: 'tx_' + Date.now(),
+        title: `Город · ${item.title}`,
+        subtitle: item.cat,
+        amount: item.price,
+        type: 'out',
+        cat: item.cat,
+        cashback: cb,
+        time: 'Только что',
+        icon: item.icon,
+        bg: item.color
+      });
+      saveState();
+      closeSheet();
+      renderAll();
+      showPush('Заказ оформлен!', `Начислен повышенный кэшбэк +${cb} ₽`);
+    }
+
+    // --- Support Chat ---
+    function onChatSubmit(e) {
+      e.preventDefault();
+      const inp = document.getElementById('chat-input');
+      const txt = (inp.value || '').trim();
+      if (!txt) return;
+      inp.value = '';
+      sendChatMessage(txt);
+    }
+
+    function sendChatMessage(txt) {
+      haptic('light');
+      state.chat.push({ from: 'user', text: txt });
+      saveState();
+      renderChat();
+
+      setTimeout(() => {
+        const low = txt.toLowerCase();
+        let reply = 'Проверил информацию по вашему профилю: все счета активны, комиссия за переводы СБП — 0 ₽.';
+        if (low.includes('кэшбэк')) {
+          reply = `Сейчас у вас накоплено ${state.cashback} ₽ кэшбэка. Выбраны категории: ${state.selectedCats.join(', ')}.`;
+        } else if (low.includes('справк') || low.includes('остат')) {
+          reply = `Справка сформирована: доступный остаток на карте Black — ${fmtMoney(state.blackBalance, true)}, на накопительном счёте — ${fmtMoney(state.savingsBalance, true)}.`;
+        } else if (low.includes('лимит')) {
+          reply = 'По СБП доступно до 30 000 000 ₽ в месяц между своими счетами и до 100 000 ₽ без комиссии другим людям.';
+        }
+        state.chat.push({ from: 'bot', text: reply });
+        saveState();
+        if (currentTab === 'chat') renderChat();
+        haptic('light');
+      }, 550);
+    }
+
+    // --- Demo Director Sheet ---
+    function openDirectorSheet() {
+      openSheet('🎬 Режиссёр демо', `
+        <div class="muted" style="margin-bottom:12px;">Настройте любые цифры для демонстрации или запустите входящий перевод с пуш-уведомлением.</div>
+        <div class="field">
+          <label>Имя профиля в шапке</label>
+          <input id="dir-name" type="text" value="${escapeHtml(state.userName)}" />
+        </div>
+        <div class="grid-2" style="margin-bottom:0;">
+          <div class="field">
+            <label>Баланс Black, ₽</label>
+            <input id="dir-blk" type="number" step="0.01" value="${state.blackBalance}" />
+          </div>
+          <div class="field">
+            <label>Накопительный, ₽</label>
+            <input id="dir-sav" type="number" step="0.01" value="${state.savingsBalance}" />
+          </div>
+        </div>
+        <button class="btn-primary" style="margin-bottom:14px;" onclick="saveDirector()">Сохранить параметры</button>
+
+        <div style="border-top:1px solid var(--border);padding-top:12px;">
+          <div style="font-weight:700;font-size:15px;margin-bottom:8px;">Имитация входящего перевода</div>
+          <div class="grid-2" style="margin-bottom:0;">
+            <div class="field">
+              <label>Отправитель</label>
+              <input id="dir-sender" type="text" value="Александр М." />
+            </div>
+            <div class="field">
+              <label>Сумма, ₽</label>
+              <input id="dir-inc-amt" type="number" value="25000" />
+            </div>
+          </div>
+          <button class="btn-secondary" onclick="runDirectorPush()">🔔 Прислать Push через 3.5 секунды</button>
+        </div>
+      `);
+    }
+
+    function saveDirector() {
+      state.userName = (document.getElementById('dir-name').value || 'Алексей').trim();
+      state.blackBalance = parseFloat(document.getElementById('dir-blk').value) || 0;
+      state.savingsBalance = parseFloat(document.getElementById('dir-sav').value) || 0;
+      saveState();
+      closeSheet();
+      renderAll();
+      showPush('Параметры обновлены', 'Новые значения баланса и профиля применены');
+    }
+
+    function runDirectorPush() {
+      const sender = (document.getElementById('dir-sender').value || 'Александр М.').trim();
+      const amt = parseFloat(document.getElementById('dir-inc-amt').value) || 10000;
+      closeSheet();
+      switchTab('home');
+      triggerIncomingDemo(amt, sender, 3500);
+    }
+
+    function triggerIncomingDemo(amount, sender, delayMs) {
+      haptic('light');
+      setTimeout(() => {
+        state.blackBalance = +(state.blackBalance + amount).toFixed(2);
+        state.transactions.unshift({
+          id: 'tx_' + Date.now(),
+          title: sender,
+          subtitle: 'Входящий перевод СБП',
+          amount,
+          type: 'in',
+          cat: 'Переводы',
+          cashback: 0,
+          time: 'Только что',
+          icon: '💸',
+          bg: '#DCFCE7'
+        });
+        saveState();
+        renderAll();
+        showPush('Пополнение · Black', `+${fmtMoney(amount, true)} от ${sender}`);
+      }, delayMs);
+    }
+
+    function resetDemoState() {
+      localStorage.removeItem(STORAGE_KEY);
+      state = getDefaultState();
+      renderAll();
+      showPush('Демо сброшено', 'Восстановлены начальные счета и история операций');
+    }
+
+    // --- Stories Viewer ---
+    let storyIdx = 0;
+    let storyProgress = 0;
+    let storyInterval = null;
+
+    function openStory(idx) {
+      haptic('light');
+      storyIdx = idx;
+      document.getElementById('story-overlay').classList.add('open');
+      showCurrentStory();
+    }
+
+    function showCurrentStory() {
+      const s = STORIES[storyIdx];
+      state.storiesViewed[s.id] = true;
+      saveState();
+      renderHome();
+
+      const overlay = document.getElementById('story-overlay');
+      overlay.style.background = s.bg;
+      document.getElementById('story-big-emoji').textContent = s.emoji;
+      document.getElementById('story-heading').textContent = s.heading;
+      document.getElementById('story-desc').textContent = s.desc;
+      const cta = document.getElementById('story-cta');
+      cta.textContent = s.cta;
+      cta.onclick = () => {
+        closeStory();
+        s.action();
+      };
+
+      document.getElementById('story-bars').innerHTML = STORIES.map((_, i) => `
+        <div class="story-bar"><div id="sbar-${i}" class="story-bar-fill" style="width:${i < storyIdx ? 100 : 0}%"></div></div>
+      `).join('');
+
+      storyProgress = 0;
+      clearInterval(storyInterval);
+      storyInterval = setInterval(() => {
+        storyProgress += 2.5;
+        const bar = document.getElementById(`sbar-${storyIdx}`);
+        if (bar) bar.style.width = Math.min(100, storyProgress) + '%';
+        if (storyProgress >= 100) {
+          if (storyIdx < STORIES.length - 1) {
+            storyIdx++;
+            showCurrentStory();
+          } else {
+            closeStory();
+          }
+        }
+      }, 110);
+    }
+
+    function onStoryTap(e) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      if (x < rect.width * 0.35) {
+        if (storyIdx > 0) { storyIdx--; showCurrentStory(); }
+      } else {
+        if (storyIdx < STORIES.length - 1) { storyIdx++; showCurrentStory(); } else { closeStory(); }
+      }
+    }
+
+    function closeStory() {
+      clearInterval(storyInterval);
+      document.getElementById('story-overlay').classList.remove('open');
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // Boot
+    renderAll();
+  </script>
+</body>
+</html>
